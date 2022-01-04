@@ -170,9 +170,25 @@ public class Model extends Observable {
      * 1. There is at least one empty space on the board.
      * 2. There are two adjacent tiles with the same value.
      */
+    private static boolean checkNeighborhood(Board b, int col, int row, int deltaCol, int deltaRow) {
+        if (col + deltaCol >= b.size() || row + deltaRow >= b.size()) {
+            return false;
+        }
+        else if (b.tile(col, row).value() == b.tile(col + deltaCol, row + deltaRow).value()) {
+            return true;
+        } else {
+            return checkNeighborhood(b, col + deltaCol, row + deltaRow, 1, 0)
+                    || checkNeighborhood(b, col + deltaCol, row + deltaRow, 0, 1);
+        }
+    }
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        if (emptySpaceExists(b)) {
+            return true;
+        } else {
+            return checkNeighborhood(b, 0, 0, 1, 0)
+                    || checkNeighborhood(b, 0, 0, 0, 1);
+        }
     }
 
 
