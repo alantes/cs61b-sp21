@@ -94,6 +94,47 @@ public class Model extends Observable {
         setChanged();
     }
 
+    private boolean moveOneColumn(int col) {
+        boolean changed = false;
+        boolean[] mergeMark = new boolean[size()];
+        for (int row = size() - 2; row >= 0; row -= 1) {
+            Tile tile1 = tile(col, row);
+            if (tile1 != null) { // 这样输入进 checkDesiredRow 的 tile 一定是非 null
+                int desiredRow = checkDesiredRow(col, row, mergeMark);
+                if (desiredRow != row) {
+                    changed = true;
+                    boolean isMerged = this.board.move(col, desiredRow, tile1);
+                    mergeMark[desiredRow] = isMerged;
+                    if (isMerged) {
+                        this.score += 2 * tile1.value();
+                    }
+                }
+            }
+        }
+        return changed;
+    }
+
+    private int checkDesiredRow (int col, int row, boolean[] mergeMark) {
+        for (int upperRow = row + 1; upperRow <= size() - 1; upperRow += 1) {
+            if (upperRow == size() - 1 && tile(col, upperRow) == null) {
+                return upperRow;
+            } else {
+                if (tile(col, upperRow) != null) {
+                    Tile tile1 = tile(col, row);
+                    Tile tile2 = tile(col, upperRow);
+                    if (tile1.value() == tile2.value() && mergeMark[upperRow] != true) {
+                        return upperRow;
+                    } else {
+                        return upperRow - 1;
+                    }
+                }
+            }
+        }
+        return row;
+    }
+
+
+
     /** Tilt the board toward SIDE. Return true iff this changes the board.
      *
      * 1. If two Tile objects are adjacent in the direction of motion and have
@@ -113,6 +154,15 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        if (atLeastOneMoveExists(this.board)) {
+            this.board.setViewingPerspective(side);
+            for (int col = 0; col < size(); col += 1) {
+                if (moveOneColumn(col)) {
+                    changed = true;
+                }
+            }
+            this.board.setViewingPerspective(Side.NORTH);
+        }
 
         checkGameOver();
         if (changed) {
@@ -182,7 +232,6 @@ public class Model extends Observable {
         }
     }
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
         if (emptySpaceExists(b)) {
             return true;
         } else {
