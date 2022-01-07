@@ -103,10 +103,10 @@ public class Model extends Observable {
                 int desiredRow = checkDesiredRow(col, row, mergeMark);
                 if (desiredRow != row) {
                     changed = true;
-                    boolean isMerged = this.board.move(col, desiredRow, tile1);
+                    boolean isMerged = board.move(col, desiredRow, tile1);
                     mergeMark[desiredRow] = isMerged;
                     if (isMerged) {
-                        this.score += 2 * tile1.value();
+                        score += 2 * tile1.value();
                     }
                 }
             }
@@ -154,14 +154,14 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
-        if (atLeastOneMoveExists(this.board)) {
-            this.board.setViewingPerspective(side);
+        if (atLeastOneMoveExists(board)) {
+            board.setViewingPerspective(side);
             for (int col = 0; col < size(); col += 1) {
                 if (moveOneColumn(col)) {
                     changed = true;
                 }
             }
-            this.board.setViewingPerspective(Side.NORTH);
+            board.setViewingPerspective(Side.NORTH);
         }
 
         checkGameOver();
