@@ -84,6 +84,7 @@ public class LinkedListDeque<T> {
             if (index == 0) {
                 return p.item;
             }
+            p = p.next;
             index -= 1;
         }
         return null;
