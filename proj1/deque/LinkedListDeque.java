@@ -1,12 +1,10 @@
 package deque;
 
-import net.sf.saxon.om.Item;
-
-public class LinkedListDeque<T> { // 在外层定义 generics 即可
+public class LinkedListDeque<T> {
     private ItemNode sentinel;
     private int size;
 
-    public class ItemNode { // 因为用到了外层的 generics, 所以不能是 static inner class
+    public class ItemNode {
         public ItemNode prev;
         public T item;
         public ItemNode next;
@@ -19,7 +17,7 @@ public class LinkedListDeque<T> { // 在外层定义 generics 即可
     }
 
     public LinkedListDeque() {
-        sentinel = new ItemNode(null, null, null); // 因为不知道会输入什么类型，所以只能给 item 赋值为 null
+        sentinel = new ItemNode(null, null, null);
         sentinel.prev = sentinel;
         sentinel.next = sentinel;
         size = 0;
@@ -40,7 +38,7 @@ public class LinkedListDeque<T> { // 在外层定义 generics 即可
     }
 
     public boolean isEmpty() {
-        return size == 0;
+        return size() == 0;
     }
 
     public int size() {
