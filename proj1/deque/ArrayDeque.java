@@ -44,7 +44,7 @@ public class ArrayDeque<T> {
     public T removeFirst() {
         T firstItem = items[nextFirst + 1];
         items[nextFirst + 1] = null;
-        nextFirst += 1;
+        nextFirst = (nextFirst + 1) % items.length;
         size -= 1;
         return firstItem;
     }
@@ -52,7 +52,7 @@ public class ArrayDeque<T> {
     public T removeLast() {
         T lastItem = items[nextLast - 1];
         items[nextLast - 1] = null;
-        nextLast -= 1;
+        nextLast = (nextLast - 1) % items.length;
         size -= 1;
         return lastItem;
     }
