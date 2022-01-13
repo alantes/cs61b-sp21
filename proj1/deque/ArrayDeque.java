@@ -43,17 +43,17 @@ public class ArrayDeque<T> {
 
     public T removeFirst() {
         T firstItem = items[nextFirst + 1];
+        items[nextFirst + 1] = null;
         nextFirst += 1;
         size -= 1;
-        items[nextFirst + 1] = null;
         return firstItem;
     }
 
     public T removeLast() {
         T lastItem = items[nextLast - 1];
+        items[nextLast - 1] = null;
         nextLast -= 1;
         size -= 1;
-        items[nextLast - 1] = null;
         return lastItem;
     }
 
