@@ -77,21 +77,30 @@ public class ArrayDeque<T> {
     }
 
     public T removeFirst() {
-        T firstItem = items[regularizeIndexes(nextFirst + 1)];
-        items[regularizeIndexes(nextFirst + 1)] = null;
-        nextFirst = regularizeIndexes(nextFirst + 1);
-        size -= 1;
-        checkUsage();
-        return firstItem;
+        if (!isEmpty()) {
+            T firstItem = items[regularizeIndexes(nextFirst + 1)];
+            items[regularizeIndexes(nextFirst + 1)] = null;
+            nextFirst = regularizeIndexes(nextFirst + 1);
+            size -= 1;
+            checkUsage();
+            return firstItem;
+        } else {
+            return null;
+        }
+
     }
 
     public T removeLast() {
-        T lastItem = items[regularizeIndexes(nextLast - 1)];
-        items[regularizeIndexes(nextLast - 1)] = null;
-        nextLast = regularizeIndexes(nextLast - 1);
-        size -= 1;
-        checkUsage();
-        return lastItem;
+        if (!isEmpty()) {
+            T lastItem = items[regularizeIndexes(nextLast - 1)];
+            items[regularizeIndexes(nextLast - 1)] = null;
+            nextLast = regularizeIndexes(nextLast - 1);
+            size -= 1;
+            checkUsage();
+            return lastItem;
+        } else {
+            return null;
+        }
     }
 
     public T get(int index) {
