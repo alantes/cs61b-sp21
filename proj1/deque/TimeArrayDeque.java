@@ -6,12 +6,12 @@ import edu.princeton.cs.algs4.Stopwatch;
  * Created by hug.
  */
 public class TimeArrayDeque {
-    private static void printTimingTable(ArrayDeque<Integer> Ns, ArrayDeque<Double> times,
+    private static void printTimingTable(ArrayDeque<Integer> numberArray, ArrayDeque<Double> times,
                                          ArrayDeque<Integer> opCounts) {
         System.out.printf("%12s %12s %12s %12s\n", "N", "time (s)", "# ops", "microsec/op");
         System.out.printf("------------------------------------------------------------\n");
-        for (int i = 0; i < Ns.size(); i += 1) {
-            int N = Ns.get(i);
+        for (int i = 0; i < numberArray.size(); i += 1) {
+            int N = numberArray.get(i);
             double time = times.get(i);
             int opCount = opCounts.get(i);
             double timePerOp = time / opCount * 1e6;
@@ -24,12 +24,12 @@ public class TimeArrayDeque {
     }
 
     public static void timeArrayDequeConstruction() {
-        ArrayDeque<Integer> Ns = new ArrayDeque<>();
+        ArrayDeque<Integer> numberArray = new ArrayDeque<>();
         ArrayDeque<Double> times = new ArrayDeque<>();
         ArrayDeque<Integer> opCounts = new ArrayDeque<>();
         int i = 1000;
         while (i <= 128000) {
-            Ns.addLast(i);
+            numberArray.addLast(i);
             int count = 0;
             ArrayDeque<Integer> tempList = new ArrayDeque<>();
             Stopwatch sw = new Stopwatch();
@@ -42,7 +42,7 @@ public class TimeArrayDeque {
             opCounts.addLast(count);
             i *= 2;
         }
-        printTimingTable(Ns, times, opCounts);
+        printTimingTable(numberArray, times, opCounts);
     }
 }
 
