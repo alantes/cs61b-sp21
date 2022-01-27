@@ -43,8 +43,10 @@ public class MaxArrayDequeTest {
 
     @Test
     public void testMin() {
-        MaxArrayDeque<Integer> a = new MaxArrayDeque(MaxArrayDequeTest.getInverseIntegerComparator());
-        MaxArrayDeque<Integer> b = new MaxArrayDeque(MaxArrayDequeTest.getInverseIntegerComparator());
+        MaxArrayDeque<Integer> a
+                = new MaxArrayDeque(MaxArrayDequeTest.getInverseIntegerComparator());
+        MaxArrayDeque<Integer> b
+                = new MaxArrayDeque(MaxArrayDequeTest.getInverseIntegerComparator());
         Integer minInteger = 499;
         for (int i = 499; i <= 1000; i += 1) {
             a.addLast(i);

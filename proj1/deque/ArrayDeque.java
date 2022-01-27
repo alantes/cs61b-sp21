@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque<T> implements Deque<T>{
+import java.util.Iterator;
+
+public class ArrayDeque<T> implements Deque<T> {
     private T[] items;
     private int size;
     private int nextFirst;
@@ -11,6 +13,47 @@ public class ArrayDeque<T> implements Deque<T>{
         nextFirst = 0; // addLast 指向和 addFirst 不同位置的好处：addFirst 之后不用改变 nextLast 的值
         nextLast = 1;
         size = 0;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof Deque)) {
+            return false;
+        }
+        Deque<T> other = (Deque<T>) o;
+        for (int i = 0; i < size(); i += 1) {
+            if (!(this.get(i).equals(other.get(i)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Iterator<T> iterator() {
+        return new ArrayDequeIterator();
+    }
+
+    private class ArrayDequeIterator implements Iterator<T> {
+        private int wizPos;
+
+        public ArrayDequeIterator() {
+            wizPos = 0;
+        }
+
+        public boolean hasNext() {
+            return wizPos < size;
+        }
+
+        public T next() {
+            wizPos += 1;
+            return items[wizPos - 1];
+        }
+
     }
 
     private void resize(int newRange) {
@@ -31,10 +74,9 @@ public class ArrayDeque<T> implements Deque<T>{
         float floatSize = size;
         if (items.length >= 16 && floatSize / items.length <= 0.25) {
             resize(items.length / 2);
+        } else if (size == items.length - 1) {
+            resize(items.length * 2);
         }
-         else if (size == items.length - 1) {
-             resize(items.length * 2);
-         }
     }
 
     private int calculateMod(int a, int b) {
