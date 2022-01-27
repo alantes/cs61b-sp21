@@ -12,8 +12,19 @@ public class MaxArrayDequeTest {
         }
     }
 
+    private static class InverseIntegerComparator implements Comparator<Integer> {
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            return o2.compareTo(o1);
+        }
+    }
+
     public static Comparator<Integer> getIntegerComparator() {
         return new IntegerComparator();
+    }
+
+    public static Comparator<Integer> getInverseIntegerComparator() {
+        return new InverseIntegerComparator();
     }
 
 
@@ -28,5 +39,18 @@ public class MaxArrayDequeTest {
         }
         assertEquals(a.max(), maxInteger);
         assertEquals(b.max(), maxInteger);
+    }
+
+    @Test
+    public void testMin() {
+        MaxArrayDeque<Integer> a = new MaxArrayDeque(MaxArrayDequeTest.getInverseIntegerComparator());
+        MaxArrayDeque<Integer> b = new MaxArrayDeque(MaxArrayDequeTest.getInverseIntegerComparator());
+        Integer minInteger = 499;
+        for (int i = 499; i <= 1000; i += 1) {
+            a.addLast(i);
+            b.addFirst(i);
+        }
+        assertEquals(a.max(), minInteger);
+        assertEquals(b.max(), minInteger);
     }
 }
