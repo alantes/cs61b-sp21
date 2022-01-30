@@ -8,7 +8,7 @@ A:
 
 Q: What's something you felt proud of in your code, if anything?
 
-A:
+A: I used checkUsage() in my code to make the resizing more like a automatic procedure and I think that is cool.
 
 Q: What's something that was particularly inelegant in your code, if anything?
 
@@ -16,15 +16,15 @@ A:
 
 Q: What did you learn by talking to your partner about writing ArrayDeque?
 
-A:
+A: 
 
 Q: What do you wish you would have known before writing ArrayDeque, if anything?
 
-A:
+A: How to implement circular structure in ArrayDeque and correctly separate 2 parts when resizing.
 
 Q: If you wrote ArrayDeque again, what would you do differently, if anything?
 
-A:
+A: 
 
 -----
 
@@ -36,11 +36,11 @@ A:
 
 Q: What's something you felt proud of in your code, if anything?
 
-A:
+A: I think my code is clear ... I learnt a lot about nested static classes in this project.
 
 Q: What's something that was particularly inelegant in your code, if anything?
 
-A:
+A: 
 
 Q: What did you learn by talking to your partner about writing LinkedListDeque?
 
@@ -60,4 +60,4 @@ Meta:
 
 Q: Did you like this design review process? Anything we should do differently next time?
 
-A: 
+A: I really hope that I can attend this review but ...
