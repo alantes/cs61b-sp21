@@ -1,0 +1,28 @@
+Please enter desired length of each string: 4
+
+Enter # strings to insert into the maps: 100000
+--Stack Overflow -- couldn't add 100000 strings of length 4.
+class bstmap.BSTMap: 0.12 sec
+Java's Built-in TreeMap: 0.16 sec
+Java's Built-in HashMap: 0.04 sec
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 1000000
+--Stack Overflow -- couldn't add 1000000 strings of length 4.
+class bstmap.BSTMap: 1.32 sec
+Java's Built-in TreeMap: 1.04 sec
+Java's Built-in HashMap: 0.60 sec
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 2000000
+--Stack Overflow -- couldn't add 2000000 strings of length 4.
+class bstmap.BSTMap: 2.21 sec
+Java's Built-in TreeMap: 2.34 sec
+Java's Built-in HashMap: 0.97 sec
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into the maps: 20000000
+--Stack Overflow -- couldn't add 20000000 strings of length 4.
+class bstmap.BSTMap: 23.91 sec
+Java's Built-in TreeMap: 22.65 sec
+Java's Built-in HashMap: 7.78 sec

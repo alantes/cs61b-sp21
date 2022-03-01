@@ -5,6 +5,15 @@ import org.junit.Test;
 
 /** Tests by Brendan Hu, Spring 2015, revised for 2016 by Josh Hug */
 public class TestBSTMap {
+    @Test
+    public void simplePutPrintTest() {
+        BSTMap<Integer, String> c = new BSTMap<>();
+        c.put(0, "0");
+        c.put(1, "2");
+        c.put(-1, "-1");
+        c.printInOrder();
+        System.out.println(c.containsKey(1));
+    }
 
   	@Test
     public void sanityGenericsTest() {
