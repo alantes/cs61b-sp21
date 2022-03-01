@@ -2,8 +2,8 @@ package bstmap;
 import java.util.Iterator;
 import java.util.Set;
 
-public class BSTMap<K extends Comparable, V> implements Map61B<K, V> {
-    int size;
+public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
+    private int size;
     private BSTNode root;
 
     private class BSTNode {
