@@ -4,7 +4,7 @@ package gitlet;
 
 import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.LinkedList;
+import java.util.HashMap;
 
 import java.io.File;
 
@@ -27,18 +27,30 @@ public class Commit implements Serializable {
     private String message;
     /* TODO: fill in the rest of this class. */
     private Date commitDate;
-    public String prev;
+    public String parent;
+    public String secondParent;
 
     /** The List that store all the hash codes of files. */
-    private LinkedList<String> files;
+    private HashMap<String, String> files = new HashMap<>();
 
-    public Commit(String message, Date commitDate) {
+    public Commit(String message, Date commitDate, String parent) {
         this.commitDate = commitDate;
         this.message = message;
-        this.prev = null;
+        this.parent = parent;
+        if (this.parent != null) {
+            Commit parentCommit = Commit.commitFromHash(parent);
+            this.files = parentCommit.files;
+
+            HashMap<String, String> stagingMap = Repository.getStagingMap();
+            for (String fileName : stagingMap.keySet()) {
+                files.put(fileName, stagingMap.get(fileName));
+                stagingMap.remove(fileName);
+            }
+            Repository.saveINDEX(stagingMap);
+        }
     }
 
-    public static Commit fromFile(String commitHashCode) {
+    public static Commit commitFromHash(String commitHashCode) {
         File f = Utils.join(Repository.COMMITS_DIR, commitHashCode);
         if (f.exists()) {
             Commit c = Utils.readObject(f, Commit.class);
@@ -49,13 +61,21 @@ public class Commit implements Serializable {
     }
 
     public String saveCommit() {
-        String commitHashCode = this.getHashCode();
+        String commitHashCode = this.getCommitHashCode();
         File f = Utils.join(Repository.COMMITS_DIR, commitHashCode);
         Utils.writeObject(f, this);
         return commitHashCode;
     }
 
-    public String getHashCode() {
+    public String getCommitHashCode() {
         return Utils.sha1(this);
+    }
+
+    public String searchHashInCommit(String fileName) {
+        if (files.containsKey(fileName)) {
+            return files.get(fileName);
+        } else {
+            return null;
+        }
     }
 }
