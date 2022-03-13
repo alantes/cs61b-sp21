@@ -38,7 +38,7 @@ public class Commit implements Serializable {
         this.message = message;
         this.parent = parent;
         if (this.parent != null) {
-            Commit parentCommit = Commit.commitFromHash(parent);
+            Commit parentCommit = Commit.getCommitFromHashCode(parent);
             this.files = parentCommit.files;
 
             HashMap<String, String> stagingMap = Repository.getStagingMap();
@@ -46,11 +46,11 @@ public class Commit implements Serializable {
                 files.put(fileName, stagingMap.get(fileName));
                 stagingMap.remove(fileName);
             }
-            Repository.saveINDEX(stagingMap);
+            Repository.saveStagingMap(stagingMap);
         }
     }
 
-    public static Commit commitFromHash(String commitHashCode) {
+    public static Commit getCommitFromHashCode(String commitHashCode) {
         File f = Utils.join(Repository.COMMITS_DIR, commitHashCode);
         if (f.exists()) {
             Commit c = Utils.readObject(f, Commit.class);
@@ -68,10 +68,10 @@ public class Commit implements Serializable {
     }
 
     public String getCommitHashCode() {
-        return Utils.sha1(this);
+        return Utils.sha1(Utils.serialize(this)); // 将 object 转换为 byte[]
     }
 
-    public String searchHashInCommit(String fileName) {
+    public String searchFileHashCodeInCommit(String fileName) {
         if (files.containsKey(fileName)) {
             return files.get(fileName);
         } else {

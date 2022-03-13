@@ -30,6 +30,7 @@ public class Repository {
     public static final File OBJECTS_DIR = join(GITLET_DIR, "objects");
 
     public static final File BLOBS_DIR = join(OBJECTS_DIR, "blobs");
+    public static final File STAGING_DIR = join(OBJECTS_DIR, "staging");
     public static final File COMMITS_DIR = join(OBJECTS_DIR, "commits");
 
     public static final File HEADS_DIR = join(REFS_DIR, "heads"); // heads 文件夹中装 branches 对应的 tip 指针
@@ -47,8 +48,9 @@ public class Repository {
             return;
         }
 
-        REFS_DIR.mkdirs();
-        OBJECTS_DIR.mkdirs();
+        HEADS_DIR.mkdirs();
+        REMOTES_DIR.mkdirs();
+        STAGING_DIR.mkdirs();
         BLOBS_DIR.mkdirs();
         COMMITS_DIR.mkdirs();
 
@@ -60,28 +62,47 @@ public class Repository {
         saveBranch("master", rootCommitRef);
         saveHEAD(rootCommitRef);
 
-        saveINDEX(stagingMap); // save void map
+        saveStagingMap(stagingMap); // save void map
     }
 
     public static void addToStaging(String fileName) {
         if (!(Utils.join(Repository.CWD, fileName).exists())) {
-            System.out.println("File not exist!");
+            System.out.println("File does not exist");
             return;
         }
-        Commit currentCommit = Commit.commitFromHash(getHEAD());
-        String hashCodeInCommit = currentCommit.searchHashInCommit(fileName);
-        String fileHashCode = getFileHashCode(fileName);
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
+        String hashCodeInCommit = currentCommit.searchFileHashCodeInCommit(fileName);
+        String fileHashCode = calculateFileHashCode(fileName);
+        HashMap<String, String> stagingMap = getStagingMap();
         if (fileHashCode == hashCodeInCommit) {
+            if (stagingMap.containsKey(fileName)) {
+                deleteFromStaging(stagingMap.get(fileName));
+                stagingMap.remove(fileName);
+            }
             return;
         } else {
-            HashMap<String, String> stagingMap = getStagingMap();
+            if (stagingMap.containsKey(fileName) && fileHashCode != stagingMap.get(fileName)) { // 待 add 的文件发生了变化，删掉原有的blob和map中的项
+                deleteFromStaging(stagingMap.get(fileName));
+                stagingMap.remove(fileName);
+            } else if (stagingMap.containsKey(fileName)) { // 待 add 的文件原样存在于 stagingMap 中直接返回
+                return;
+            }
+            // 文件不存在于 stagingMap 中
             stagingMap.put(fileName, fileHashCode);
-            saveINDEX(stagingMap);
-            // add file to blobs
-            saveFileToBlobs(fileName);
+            saveStagingMap(stagingMap);
+            // add file to staging area
+            saveFileToStaging(fileName);
         }
     }
 
+    /** helper methods that have to be public in order to be utilized by other classes. */
+    public static void saveStagingMap(HashMap stagingMap) {
+        Utils.writeObject(INDEX, stagingMap);
+    }
+
+    public static HashMap<String, String> getStagingMap() {
+        return Utils.readObject(INDEX, HashMap.class);
+    }
 
     public static void saveHEAD(String commitRef) {     // 和原本 git 相比有所简化，不对master/非 master的commit做区分，只存储commit的reference
         Utils.writeContents(HEAD, commitRef);
@@ -95,30 +116,42 @@ public class Repository {
         File f = join(HEADS_DIR, branchName);
         Utils.writeContents(f, commitRef);
     }
-    
-    public static String getFileHashCode(String fileName) {
-        byte[] fileBytes = loadFile(fileName);
+
+    public static String calculateFileHashCode(String fileName) {
+        byte[] fileBytes = loadFileContent(fileName);
         return Utils.sha1(fileBytes);
     }
 
-    public static byte[] loadFile(String fileName) {
-        File f = Utils.join(CWD, fileName);
-        return Utils.readContents(f);
+    public static boolean moveFileFromStagingToBlobs(String fileName) {
+
     }
 
-    public static void saveFileToBlobs(String fileName) {
-        byte[] fileContent = loadFile(fileName);
-        String fileHashCode = getFileHashCode(fileName);
-        File f = join(BLOBS_DIR, fileHashCode);
+    /** helper methods. */
+    private static void saveFileToStaging(String fileName) {
+        byte[] fileContent = loadFileContent(fileName);
+        String fileHashCode = calculateFileHashCode(fileName);
+        File f = join(STAGING_DIR, fileHashCode);
         Utils.writeContents(f, fileContent);
     }
 
-    public static void saveINDEX(HashMap stagingMap) {
-        Utils.writeObject(INDEX, stagingMap);
+    /* 需要注意的是一旦文件进入到 blobs 中之后就不再会被删除了，删除只会发生在 staging 中 */
+    private static boolean deleteFromStaging(String fileHashCode) { // Utils 中的 restrictedDelete 只能用于删除主文件夹中的文件，不适合删除 staging 中的文件
+        File f = join(STAGING_DIR, fileHashCode);
+        if (!f.isDirectory()) {
+            return f.delete();
+        } else {
+            return false;
+        }
     }
 
-    public static HashMap getStagingMap() {
-        return Utils.readObject(INDEX, HashMap.class);
+
+    /** helper method for helper method*/
+    private static byte[] loadFileContent(String fileName) {
+        File f = Utils.join(CWD, fileName);
+        if (!(f.exists())) {
+            throw new RuntimeException(
+                    String.format("File: %s does not exist in CWD!", fileName));
+        }
+        return Utils.readContents(f);
     }
-    
 }
