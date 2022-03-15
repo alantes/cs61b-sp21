@@ -46,11 +46,12 @@ public class CapersRepository {
     public static void writeStory(String text) {
         // TODO
         File f = Utils.join("capers", ".capers", "story");
+        StringBuilder returnSB = new StringBuilder();
         if (f.exists()) {
-            Utils.writeContents(f, Utils.readContentsAsString(f) + text + "\n");
-        } else {
-            Utils.writeContents(f, text + "\n");
+            returnSB.append(Utils.readContentsAsString(f));
         }
+        returnSB.append(text + "\n");
+        Utils.writeContents(f, returnSB.toString());
         System.out.print(Utils.readContentsAsString(f) + "\n");
     }
 
