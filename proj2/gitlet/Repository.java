@@ -6,6 +6,7 @@ import static gitlet.Utils.*;
 // TODO: any imports you need here
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /** Represents a gitlet repository.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -56,11 +57,11 @@ public class Repository {
 
         HashMap<String, String> stagingMap = new HashMap<>();
 
-        Commit rootCommit = new Commit("initial commit", new Date(0), null);
-        String rootCommitRef = rootCommit.saveCommit();
+        Commit rootCommit = new Commit("initial commit", new Date(0), null, "master");
+        String rootCommitHashCode = rootCommit.saveCommit();
 
-        saveBranch("master", rootCommitRef);
-        saveHEAD(rootCommitRef);
+        saveBranch(rootCommit.getBranch(), rootCommitHashCode);
+        saveHEAD(rootCommitHashCode);
 
         saveStagingMap(stagingMap); // save void map
     }
@@ -95,6 +96,54 @@ public class Repository {
         }
     }
 
+    public static void generateNewCommit(String message) {
+        if (getStagingMap().size() == 0) {
+            System.out.println("No changes added to the commit.");
+            return;
+        }
+        if (message == null) {
+            System.out.println("Please enter a commit message.");
+            return;
+        }
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
+        Commit newCommit = new Commit(message, new Date(), getHEAD(), currentCommit.getBranch());
+        String newCommitHashCode = newCommit.saveCommit();
+        saveBranch(newCommit.getBranch(), newCommitHashCode);
+        saveHEAD(newCommitHashCode);
+    }
+
+    public static void removeFromTracking(String fileName) {
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
+        HashMap<String, String> stagingMap = getStagingMap();
+        if (stagingMap.containsKey(fileName)) { // 应该是 unstage 优先，如果同时在 staging 和 current commit 中应该会只 unstage
+            stagingMap.remove(fileName);
+            deleteFromStaging(calculateFileHashCode(fileName));
+        } else if (currentCommit.getFiles().containsKey(fileName)) {
+            stagingMap.put(fileName, "removed");
+            Utils.restrictedDelete(fileName); // remove the file from the working directory
+        } else {
+            System.out.println("No reason to remove the file.");
+        }
+        Repository.saveStagingMap(stagingMap);
+    }
+
+    public static void log() {
+        String p = getHEAD();
+        while (p != null) {
+            Commit commitPointer = Commit.getCommitFromHashCode(p);
+            System.out.println(commitPointer);
+            p = commitPointer.getParent();
+        }
+    }
+
+    public static void globalLog() {
+        List<String> allCommitList = Utils.plainFilenamesIn(COMMITS_DIR);
+        for (String p : allCommitList) {
+            Commit commitPointer = Commit.getCommitFromHashCode(p);
+            System.out.println(commitPointer);
+        }
+    }
+
     /** helper methods that have to be public in order to be utilized by other classes. */
     public static void saveStagingMap(HashMap stagingMap) {
         Utils.writeObject(INDEX, stagingMap);
@@ -122,8 +171,15 @@ public class Repository {
         return Utils.sha1(fileBytes);
     }
 
-    public static boolean moveFileFromStagingToBlobs(String fileName) {
-
+    public static void moveFileFromStagingToBlobs(String fileHashCode) {
+        File fileInStaging = join(STAGING_DIR, fileHashCode);
+        File fileInBlobs = Utils.join(BLOBS_DIR, fileHashCode);
+        if (fileInBlobs.exists()) {
+            deleteFromStaging(fileHashCode);
+        } else {
+            fileInStaging.renameTo(fileInBlobs);
+            deleteFromStaging(fileHashCode);
+        }
     }
 
     /** helper methods. */

@@ -23,12 +23,33 @@ public class Main {
                 Repository.setupPersistence();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                // handle the `add [filename]` command
                 validateNumArgs("init", args, 2);
-                String fileName = args[1];
-                Repository.addToStaging(fileName);
+                String fileNameToAdd = args[1];
+                Repository.addToStaging(fileNameToAdd);
                 break;
-            // TODO: FILL THE REST IN
+            case "commit":
+                // handle the `commit [message]` command
+                validateNumArgs("init", args, 2);
+                String message = args[1];
+                Repository.generateNewCommit(message);
+                break;
+            case "rm":
+                // handle the `rm [filename]` command
+                validateNumArgs("init", args, 2);
+                String fileNameToRemove = args[1];
+                Repository.removeFromTracking(fileNameToRemove);
+                break;
+            case "log":
+                // handle the `log` command
+                validateNumArgs("init", args, 1);
+                Repository.log();
+                break;
+            case "global-log":
+                // handle the `log` command
+                validateNumArgs("init", args, 1);
+                Repository.globalLog();
+                break;
         }
     }
 

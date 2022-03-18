@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
 
+import java.util.Formatter;
+
 import java.io.File;
 
 /** Represents a gitlet commit object.
@@ -27,27 +29,53 @@ public class Commit implements Serializable {
     private String message;
     /* TODO: fill in the rest of this class. */
     private Date commitDate;
-    public String parent;
-    public String secondParent;
+    private String currentCommitHashCode;
+    private String parent;
+    private String secondParent;
+    private String branch;
 
     /** The List that store all the hash codes of files. */
     private HashMap<String, String> files = new HashMap<>();
 
-    public Commit(String message, Date commitDate, String parent) {
+    public Commit(String message, Date commitDate, String parent, String branch) {
         this.commitDate = commitDate;
         this.message = message;
         this.parent = parent;
-        if (this.parent != null) {
-            Commit parentCommit = Commit.getCommitFromHashCode(parent);
+        this.branch = branch;
+
+        if (this.getParent() != null) {
+            Commit parentCommit = Commit.getCommitFromHashCode(getParent());
             this.files = parentCommit.files;
 
             HashMap<String, String> stagingMap = Repository.getStagingMap();
+
             for (String fileName : stagingMap.keySet()) {
-                files.put(fileName, stagingMap.get(fileName));
-                stagingMap.remove(fileName);
+                if (stagingMap.get(fileName).equals("removed")) { // 两个字符串判断相等与否要用 equals()
+                    this.files.remove(fileName);
+                    stagingMap.remove(fileName);
+                } else {
+                    files.put(fileName, stagingMap.get(fileName));
+                    Repository.moveFileFromStagingToBlobs(stagingMap.get(fileName));
+                    stagingMap.remove(fileName);
+                }
             }
             Repository.saveStagingMap(stagingMap);
         }
+    }
+
+    public String getBranch() {
+        return this.branch;
+    }
+
+    public String toString() {
+        StringBuilder returnSB = new StringBuilder("===\n");
+        returnSB.append(String.format("commit %s\n", getCommitHashCode()));
+        if (getSecondParent() != null) {
+            returnSB.append(String.format("Merge: %.7s %.7s\n", getParent(), getSecondParent()));
+        }
+        returnSB.append(String.format("Date: %s\n", getCommitDate()));
+        returnSB.append(String.format("%s\n", getMessage()));
+        return returnSB.toString();
     }
 
     public static Commit getCommitFromHashCode(String commitHashCode) {
@@ -67,8 +95,27 @@ public class Commit implements Serializable {
         return commitHashCode;
     }
 
+    public String getParent() {
+        return parent;
+    }
+
+    public String getSecondParent() {
+        return secondParent;
+    }
+
+    public Date getCommitDate() {
+        return commitDate;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     public String getCommitHashCode() {
-        return Utils.sha1(Utils.serialize(this)); // 将 object 转换为 byte[]
+        if (currentCommitHashCode == null) {
+            currentCommitHashCode = Utils.sha1(Utils.serialize(this)); // 需要先将 object 转换为 byte[]
+        }
+        return currentCommitHashCode;
     }
 
     public String searchFileHashCodeInCommit(String fileName) {
@@ -77,5 +124,9 @@ public class Commit implements Serializable {
         } else {
             return null;
         }
+    }
+
+    public HashMap<String, String> getFiles() {
+        return files;
     }
 }
