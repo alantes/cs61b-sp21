@@ -50,6 +50,25 @@ public class Main {
                 validateNumArgs("init", args, 1);
                 Repository.globalLog();
                 break;
+            case "checkout":
+                if (args.length == 2) {
+                    String brachName = args[1];
+                    Repository.checkoutBranch(brachName);
+                    break;
+                }
+                if (args.length == 3) {
+                    String fileName = args[2];
+                    Repository.checkoutFileInHEAD(fileName);
+                    break;
+                }
+                if (args.length == 4) {
+                    String commitID = args[1];
+                    String fileName = args[3];
+                    Repository.checkoutFileInCommit(commitID, fileName);
+                    break;
+                }
+                throw new RuntimeException(
+                        String.format("Invalid number of arguments for: %s.", cmd));
         }
     }
 

@@ -127,6 +127,18 @@ public class Repository {
         Repository.saveStagingMap(stagingMap);
     }
 
+    public static void checkoutFileInHEAD(String fileName) {
+
+    }
+
+    public static void checkoutFileInCommit(String commitID, String fileName) {
+
+    }
+
+    public static void checkoutBranch(String branchName) {
+
+    }
+
     public static void log() {
         String p = getHEAD();
         while (p != null) {
