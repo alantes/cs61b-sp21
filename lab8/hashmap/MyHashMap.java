@@ -159,7 +159,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         size += 1;
         keySet.add(key);
 
-        if (size/buckets.length >= maxLoad) {
+        if (size / buckets.length >= maxLoad) {
             Collection<Node>[] newBuckets = createTable(2 * buckets.length);
             for (K keyPointer : keySet) {
                 int newKeyIndex = Math.floorMod(keyPointer.hashCode(), newBuckets.length);

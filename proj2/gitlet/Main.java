@@ -16,7 +16,7 @@ public class Main {
         }
 
         String cmd = args[0];
-        switch(cmd) {
+        switch (cmd) {
             case "init":
                 // TODO: handle the `init` command
                 validateNumArgs("init", args, 1);
@@ -69,6 +69,8 @@ public class Main {
                 }
                 throw new RuntimeException(
                         String.format("Invalid number of arguments for: %s.", cmd));
+            default:
+                exitWithError(String.format("Unknown command: %s", args[0]));
         }
     }
 
@@ -77,5 +79,12 @@ public class Main {
             throw new RuntimeException(
                     String.format("Invalid number of arguments for: %s.", cmd));
         }
+    }
+
+    public static void exitWithError(String message) {
+        if (message != null && !message.equals("")) {
+            System.out.println(message);
+        }
+        System.exit(-1);
     }
 }

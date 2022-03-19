@@ -6,8 +6,6 @@ import java.io.Serializable;
 import java.util.Date; // TODO: You'll likely use this in this class
 import java.util.HashMap;
 
-import java.util.Formatter;
-
 import java.io.File;
 
 /** Represents a gitlet commit object.
@@ -73,7 +71,9 @@ public class Commit implements Serializable {
         if (getSecondParent() != null) {
             returnSB.append(String.format("Merge: %.7s %.7s\n", getParent(), getSecondParent()));
         }
-        returnSB.append(String.format("Date: %s\n", getCommitDate()));
+
+        returnSB.append(String.format("%s %ta %<tb %<td %<tT %<tY +0800\n",
+                                        "Date:", getCommitDate()));
         returnSB.append(String.format("%s\n", getMessage()));
         return returnSB.toString();
     }
