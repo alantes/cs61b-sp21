@@ -24,30 +24,30 @@ public class Main {
                 break;
             case "add":
                 // handle the `add [filename]` command
-                validateNumArgs("init", args, 2);
+                validateNumArgs("add", args, 2);
                 String fileNameToAdd = args[1];
                 Repository.addToStaging(fileNameToAdd);
                 break;
             case "commit":
                 // handle the `commit [message]` command
-                validateNumArgs("init", args, 2);
+                validateNumArgs("commit", args, 2);
                 String message = args[1];
                 Repository.generateNewCommit(message);
                 break;
             case "rm":
                 // handle the `rm [filename]` command
-                validateNumArgs("init", args, 2);
+                validateNumArgs("rm", args, 2);
                 String fileNameToRemove = args[1];
                 Repository.removeFromTracking(fileNameToRemove);
                 break;
             case "log":
                 // handle the `log` command
-                validateNumArgs("init", args, 1);
+                validateNumArgs("log", args, 1);
                 Repository.log();
                 break;
             case "global-log":
                 // handle the `log` command
-                validateNumArgs("init", args, 1);
+                validateNumArgs("global-log", args, 1);
                 Repository.globalLog();
                 break;
             case "checkout":
@@ -69,6 +69,24 @@ public class Main {
                 }
                 throw new RuntimeException(
                         String.format("Invalid number of arguments for: %s.", cmd));
+
+            case "find":
+                validateNumArgs("find", args, 2);
+                String messageToFind = args[1];
+                Repository.find(messageToFind);
+                break;
+
+            case "status":
+                validateNumArgs("status", args, 1);
+                Repository.status();
+                break;
+
+            case "branch":
+                validateNumArgs("branch", args, 2);
+                String branchName = args[1];
+                Repository.createBranch(branchName);
+                break;
+
             default:
                 exitWithError(String.format("Unknown command: %s", args[0]));
         }

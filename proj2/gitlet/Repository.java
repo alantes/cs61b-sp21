@@ -4,10 +4,7 @@ import java.io.File;
 import static gitlet.Utils.*;
 
 // TODO: any imports you need here
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Represents a gitlet repository.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -64,7 +61,7 @@ public class Repository {
         String rootCommitHashCode = rootCommit.saveCommit();
 
         saveBranch(rootCommit.getBranch(), rootCommitHashCode);
-        saveHEAD(rootCommitHashCode);
+        saveHEAD(rootCommit.getBranch()); // saveHEAD should be at the back of saveBranch
 
         saveStagingMap(stagingMap); // save void map
     }
@@ -74,7 +71,7 @@ public class Repository {
             System.out.println("File does not exist");
             return;
         }
-        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEADAsCommitID());
         String hashCodeInCommit = currentCommit.searchFileHashCodeInCommit(fileName);
         String fileHashCode = calculateFileHashCode(fileName);
         HashMap<String, String> stagingMap = getStagingMap();
@@ -100,6 +97,12 @@ public class Repository {
         }
     }
 
+    public static void createBranch(String branchName) {
+        String headCommitID = getHEADAsCommitID();
+        saveBranch(branchName, headCommitID);
+    }
+
+
     public static void generateNewCommit(String message) {
         if (getStagingMap().size() == 0) {
             System.out.println("No changes added to the commit.");
@@ -109,15 +112,14 @@ public class Repository {
             System.out.println("Please enter a commit message.");
             return;
         }
-        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
-        Commit newCommit = new Commit(message, new Date(), getHEAD(), currentCommit.getBranch());
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEADAsCommitID());
+        Commit newCommit = new Commit(message, new Date(), getHEADAsCommitID(), currentCommit.getBranch());
         String newCommitHashCode = newCommit.saveCommit();
         saveBranch(newCommit.getBranch(), newCommitHashCode);
-        saveHEAD(newCommitHashCode);
     }
 
     public static void removeFromTracking(String fileName) {
-        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEADAsCommitID());
         HashMap<String, String> stagingMap = getStagingMap();
         if (stagingMap.containsKey(fileName)) {
             // 应该是 unstage 优先，如果同时在 staging 和 current commit 中应该会只 unstage
@@ -133,7 +135,7 @@ public class Repository {
     }
 
     public static void checkoutFileInHEAD(String fileName) {
-        checkoutFileInCommit(getHEAD(), fileName);
+        checkoutFileInCommit(getHEADAsCommitID(), fileName);
     }
 
     private static String searchCommitCodeFromID(String commitID) {
@@ -183,7 +185,7 @@ public class Repository {
     public static void checkoutBranch(String branchName) {
         List<String> allCWDFileList = Utils.plainFilenamesIn(CWD);
         for (String fileName : allCWDFileList) {
-            if (!checkIfFileInCommit(fileName, getHEAD())) {
+            if (!checkIfFileInCommit(fileName, getHEADAsCommitID())) {
                 System.out.println(
                         "There is an untracked file in the way; "
                                 + "delete it, or add and commit it first.");
@@ -196,7 +198,7 @@ public class Repository {
             return;
         }
         Commit branchCommit = Commit.getCommitFromHashCode(branchHeadHashCode);
-        Commit currentCommit = Commit.getCommitFromHashCode(getHEAD());
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEADAsCommitID());
         if (branchCommit.getBranch().equals(currentCommit.getBranch())) {
             System.out.println("No need to checkout the current branch.");
             return;
@@ -211,7 +213,7 @@ public class Repository {
         for (String branchCommitFile : branchFileMap.keySet()) {
             moveFileFromBlobsToCWD(branchCommitFile, currentCommitFileMap.get(branchCommitFile));
         }
-        saveHEAD(branchHeadHashCode);
+        saveHEAD(branchName);
 
         List<String> allStagingFileList = Utils.plainFilenamesIn(STAGING_DIR);
         for (String p : allStagingFileList) {
@@ -222,7 +224,7 @@ public class Repository {
     }
 
     public static void log() {
-        String p = getHEAD();
+        String p = getHEADAsCommitID();
         while (p != null) {
             Commit commitPointer = Commit.getCommitFromHashCode(p);
             System.out.println(commitPointer);
@@ -238,6 +240,72 @@ public class Repository {
         }
     }
 
+    public static void find(String messageToFind) {
+        List<String> allCommitList = Utils.plainFilenamesIn(COMMITS_DIR);
+        int nullFoundIndicator = 1;
+        for (String p : allCommitList) {
+            Commit commitPointer = Commit.getCommitFromHashCode(p);
+            if (commitPointer.getMessage().contains(messageToFind)) {
+                System.out.println(p);
+                nullFoundIndicator = 0;
+            }
+        }
+        if (nullFoundIndicator == 1) {
+            System.out.println("Found no commit with that message.");
+        }
+    }
+
+    private static class StringComparator implements Comparator<String> {
+        @Override
+        public int compare(String a, String b) {
+            return a.compareTo(b);
+        }
+    }
+
+    public static void status() {
+        StringBuilder returnSB = new StringBuilder("=== Branches ===\n");
+
+        List<String> allBranchList = Utils.plainFilenamesIn(HEADS_DIR);
+        allBranchList.sort(new StringComparator());
+        for (String s : allBranchList) {
+            if (s.equals(getHEAD())) {
+                returnSB.append("*");
+            }
+            returnSB.append(String.format("%s\n",s));
+        }
+        returnSB.append("\n");
+
+        Map<String, String> stagingMap = getStagingMap();
+        List<String> allStagedList = new ArrayList<>();
+        List<String> allRemovedList = new ArrayList<>();
+        for (String s : stagingMap.keySet()) {
+            if (stagingMap.get(s).equals("removed")) {
+                allRemovedList.add(s);
+            } else {
+                allStagedList.add(s);
+            }
+        }
+        allRemovedList.sort(new StringComparator());
+        allStagedList.sort(new StringComparator());
+
+        returnSB.append("=== Staged Files ===\n");
+        for (String s : allStagedList) {
+            returnSB.append(String.format("%s\n",s));
+        }
+        returnSB.append("\n");
+
+        returnSB.append("=== Removed Files ===\n");
+        for (String s : allRemovedList) {
+            returnSB.append(String.format("%s\n",s));
+        }
+        returnSB.append("\n");
+        returnSB.append("=== Modifications Not Staged For Commit ===\n");
+        returnSB.append("\n");
+        returnSB.append("=== Untracked Files ===\n");
+        returnSB.append("\n");
+        System.out.println(returnSB);
+    }
+
     /** helper methods that have to be public in order to be utilized by other classes. */
     public static void saveStagingMap(HashMap stagingMap) {
         Utils.writeObject(INDEX, stagingMap);
@@ -247,11 +315,21 @@ public class Repository {
         return Utils.readObject(INDEX, HashMap.class);
     }
 
-    public static void saveHEAD(String commitRef) {
-        Utils.writeContents(HEAD, commitRef);
+    // saveHEAD should be used behind saveBranch
+    public static void saveHEAD(String commitRefOrBranchName) {
+        Utils.writeContents(HEAD, commitRefOrBranchName);
     }
 
     public static String getHEAD() {
+        return Utils.readContentsAsString(HEAD);
+    }
+
+    public static String getHEADAsCommitID() {
+        String HEADContent = Utils.readContentsAsString(HEAD);
+        File f = Utils.join(HEADS_DIR, HEADContent);
+        if (f.exists()) {
+            return Utils.readContentsAsString(f);
+        }
         return Utils.readContentsAsString(HEAD);
     }
 
