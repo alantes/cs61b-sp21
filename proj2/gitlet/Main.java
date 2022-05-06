@@ -87,6 +87,12 @@ public class Main {
                 Repository.createBranch(branchName);
                 break;
 
+            case "rm-branch":
+                validateNumArgs("rm-branch", args, 2);
+                String branchNameToRemove = args[1];
+                Repository.removeBranch(branchNameToRemove);
+                break;
+
             default:
                 exitWithError(String.format("Unknown command: %s", args[0]));
         }

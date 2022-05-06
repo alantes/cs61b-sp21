@@ -98,10 +98,27 @@ public class Repository {
     }
 
     public static void createBranch(String branchName) {
+        if (Utils.join(HEADS_DIR, branchName).exists()){
+            System.out.println("A branch with that name already exists.");
+            return;
+        }
         String headCommitID = getHEADAsCommitID();
         saveBranch(branchName, headCommitID);
     }
 
+
+    public static boolean removeBranch(String branchNameToRemove) {
+        File f = Utils.join(HEADS_DIR, branchNameToRemove);
+        if (!(f.exists())){
+            System.out.println("A branch with that name does not exist.");
+            return false;
+        }
+        if (getHEAD().equals(branchNameToRemove)){
+            System.out.println("Cannot remove the current branch.");
+            return false;
+        }
+        return f.delete();
+    }
 
     public static void generateNewCommit(String message) {
         if (getStagingMap().size() == 0) {
