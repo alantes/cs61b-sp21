@@ -172,6 +172,26 @@ public class Repository {
         return null;
     }
 
+    public static void reset(String targetCommitID) {
+        String targetCommitHashCode = searchCommitCodeFromID(targetCommitID);
+        if (targetCommitHashCode == null) {
+            System.out.println("No commit with that id exists.");
+            return;
+        }
+        if (checkUntrackedFiles()) {
+            return;
+        }
+        // files manipulation: Checks out all the files tracked by the given commit.
+        //      Removes tracked files that are not present in that commit.
+        Commit currentCommit = Commit.getCommitFromHashCode(getHEADAsCommitID());
+        Commit targetCommit = Commit.getCommitFromHashCode(targetCommitHashCode);
+        checkoutCommit(currentCommit, targetCommit);
+
+        //  moves the current branch’s head to that commit node
+        String currentBranchName = currentCommit.getBranch();
+        saveBranch(currentBranchName, targetCommitHashCode);
+    }
+
     public static void checkoutFileInCommit(String commitID, String fileName) {
         // search commit hashcode using commit id
         String commitHashCode = searchCommitCodeFromID(commitID);
@@ -198,16 +218,42 @@ public class Repository {
                 && commitFileMap.get(fileName).equals(fileHashCode));
     }
 
+    private static void checkoutCommit(Commit currentCommit, Commit targetCommit) {
+        Map<String, String> targetFileMap = targetCommit.getFiles();
+        Map<String, String> currentCommitFileMap = currentCommit.getFiles();
 
-    public static void checkoutBranch(String branchName) {
+        for (String currentCommitFile : currentCommitFileMap.keySet()) {
+            Utils.restrictedDelete(currentCommitFile);
+        }
+        for (String branchCommitFile : targetFileMap.keySet()) {
+            moveFileFromBlobsToCWD(branchCommitFile, currentCommitFileMap.get(branchCommitFile));
+        }
+
+        List<String> allStagingFileList = Utils.plainFilenamesIn(STAGING_DIR);
+        for (String p : allStagingFileList) {
+            deleteFromStaging(p);
+        }
+        saveStagingMap(new HashMap<>());
+
+    }
+
+    private static boolean checkUntrackedFiles() {
         List<String> allCWDFileList = Utils.plainFilenamesIn(CWD);
         for (String fileName : allCWDFileList) {
             if (!checkIfFileInCommit(fileName, getHEADAsCommitID())) {
+                System.out.println(fileName);
                 System.out.println(
                         "There is an untracked file in the way; "
                                 + "delete it, or add and commit it first.");
-                return;
+                return true;
             }
+        }
+        return false;
+    }
+
+    public static void checkoutBranch(String branchName) {
+        if (checkUntrackedFiles()) {
+            return;
         }
         String branchHeadHashCode = getBranchHead(branchName);
         if (branchHeadHashCode == null) {
@@ -220,23 +266,8 @@ public class Repository {
             System.out.println("No need to checkout the current branch.");
             return;
         }
-
-        Map<String, String> branchFileMap = branchCommit.getFiles();
-        Map<String, String> currentCommitFileMap = currentCommit.getFiles();
-
-        for (String currentCommitFile : currentCommitFileMap.keySet()) {
-            Utils.restrictedDelete(currentCommitFile);
-        }
-        for (String branchCommitFile : branchFileMap.keySet()) {
-            moveFileFromBlobsToCWD(branchCommitFile, currentCommitFileMap.get(branchCommitFile));
-        }
         saveHEAD(branchName);
-
-        List<String> allStagingFileList = Utils.plainFilenamesIn(STAGING_DIR);
-        for (String p : allStagingFileList) {
-            deleteFromStaging(p);
-        }
-        saveStagingMap(new HashMap<>());
+        checkoutCommit(currentCommit, branchCommit);
 
     }
 

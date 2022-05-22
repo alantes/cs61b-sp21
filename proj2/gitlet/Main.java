@@ -93,6 +93,12 @@ public class Main {
                 Repository.removeBranch(branchNameToRemove);
                 break;
 
+            case "reset":
+                validateNumArgs("reset", args, 2);
+                String commitID = args[1];
+                Repository.reset(commitID);
+                break;
+
             default:
                 exitWithError(String.format("Unknown command: %s", args[0]));
         }

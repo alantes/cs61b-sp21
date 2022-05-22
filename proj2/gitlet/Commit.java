@@ -47,17 +47,16 @@ public class Commit implements Serializable {
 
             HashMap<String, String> stagingMap = Repository.getStagingMap();
 
-            for (String fileName : stagingMap.keySet()) {
+            for (String fileName : stagingMap.keySet()) { // 注意在 iterate 过程中 stagingMap 不能改变
                 if (stagingMap.get(fileName).equals("removed")) { // 两个字符串判断相等与否要用 equals()
                     this.files.remove(fileName);
-                    stagingMap.remove(fileName);
                 } else {
                     files.put(fileName, stagingMap.get(fileName));
                     Repository.moveFileFromStagingToBlobs(stagingMap.get(fileName));
-                    stagingMap.remove(fileName);
                 }
             }
-            Repository.saveStagingMap(stagingMap);
+
+            Repository.saveStagingMap(new HashMap<>());
         }
     }
 
